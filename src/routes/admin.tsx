@@ -1,23 +1,28 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { ShoppingBag, Package, Truck } from "lucide-react";
+import { LayoutDashboard, Package, Truck, Users, UserCog, Boxes, ContactRound } from "lucide-react";
 
-export const Route = createFileRoute("/admin")({
-  component: AdminLayout,
-});
+export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
 function AdminLayout() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isBO, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (!user) navigate({ to: "/auth" });
-    else if (!isAdmin) navigate({ to: "/" });
-  }, [user, isAdmin, loading, navigate]);
+    else if (!isBO) navigate({ to: "/" });
+  }, [user, isBO, loading, navigate]);
 
-  if (loading || !isAdmin) return <p className="py-12 text-center text-muted-foreground">Vérification…</p>;
+  if (loading || !isBO) return <p className="py-12 text-center text-muted-foreground">Vérification…</p>;
+
+  const Item = ({ to, icon: Icon, label, exact }: any) => (
+    <Link to={to} activeProps={{ className: "bg-primary text-primary-foreground" }} activeOptions={exact ? { exact: true } : undefined}
+      className="card-pop flex flex-col items-center justify-center gap-1 rounded-xl p-3 text-xs font-semibold">
+      <Icon className="h-5 w-5" /> {label}
+    </Link>
+  );
 
   return (
     <div className="space-y-5 py-4">
@@ -25,16 +30,14 @@ function AdminLayout() {
         <p className="text-xs uppercase text-primary">Back-office</p>
         <h1 className="font-display text-3xl font-bold">Admin Francky's</h1>
       </div>
-      <nav className="grid grid-cols-3 gap-2">
-        <Link to="/admin" activeProps={{ className: "bg-primary text-primary-foreground" }} activeOptions={{ exact: true }} className="card-pop flex flex-col items-center gap-1 rounded-xl p-3 text-sm font-semibold">
-          <ShoppingBag className="h-5 w-5" /> Commandes
-        </Link>
-        <Link to="/admin/products" activeProps={{ className: "bg-primary text-primary-foreground" }} className="card-pop flex flex-col items-center gap-1 rounded-xl p-3 text-sm font-semibold">
-          <Package className="h-5 w-5" /> Produits
-        </Link>
-        <Link to="/admin/carts" activeProps={{ className: "bg-primary text-primary-foreground" }} className="card-pop flex flex-col items-center gap-1 rounded-xl p-3 text-sm font-semibold">
-          <Truck className="h-5 w-5" /> Charriots
-        </Link>
+      <nav className="grid grid-cols-3 gap-2 sm:grid-cols-7">
+        <Item to="/admin" icon={LayoutDashboard} label="Tableau" exact />
+        <Item to="/admin/products" icon={Package} label="Produits" />
+        <Item to="/admin/carts" icon={Truck} label="Charriots" />
+        <Item to="/admin/stocks" icon={Boxes} label="Stocks" />
+        <Item to="/admin/cart-managers" icon={UserCog} label="Gest. charriot" />
+        {isAdmin && <Item to="/admin/users" icon={Users} label="Utilisateurs" />}
+        <Item to="/admin/customers" icon={ContactRound} label="Clients" />
       </nav>
       <Outlet />
     </div>
