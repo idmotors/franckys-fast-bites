@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as MyOrdersRouteImport } from './routes/my-orders'
 import { Route as LocateRouteImport } from './routes/locate'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CartManagerRouteImport } from './routes/cart-manager'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -33,6 +34,11 @@ const LocateRoute = LocateRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartManagerRoute = CartManagerRouteImport.update({
+  id: '/cart-manager',
+  path: '/cart-manager',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/cart-manager': typeof CartManagerRoute
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/cart-manager': typeof CartManagerRoute
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/cart-manager': typeof CartManagerRoute
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
+    | '/cart-manager'
     | '/checkout'
     | '/locate'
     | '/my-orders'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cart'
+    | '/cart-manager'
     | '/checkout'
     | '/locate'
     | '/my-orders'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
+    | '/cart-manager'
     | '/checkout'
     | '/locate'
     | '/my-orders'
@@ -150,6 +162,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
+  CartManagerRoute: typeof CartManagerRoute
   CheckoutRoute: typeof CheckoutRoute
   LocateRoute: typeof LocateRoute
   MyOrdersRoute: typeof MyOrdersRoute
@@ -176,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart-manager': {
+      id: '/cart-manager'
+      path: '/cart-manager'
+      fullPath: '/cart-manager'
+      preLoaderRoute: typeof CartManagerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -249,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
+  CartManagerRoute: CartManagerRoute,
   CheckoutRoute: CheckoutRoute,
   LocateRoute: LocateRoute,
   MyOrdersRoute: MyOrdersRoute,
@@ -256,3 +277,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
