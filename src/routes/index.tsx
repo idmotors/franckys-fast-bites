@@ -23,7 +23,6 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const { items, add, setQty } = useCart();
   const { pos, request, busy, error } = useGeo();
-  void pos;
 
   useEffect(() => {
     supabase.from("products").select("*").eq("available", true).order("category").then(({ data }) => {
