@@ -87,7 +87,7 @@ function AdminProducts() {
               </label>
               {f.image_url && <Button type="button" variant="ghost" size="sm" onClick={() => setF({ ...f, image_url: "" })}>Retirer</Button>}
             </div>
-            <Input className="mt-2" value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="ou collez une URL https://..." />
+            
           </div>
         </div>
         <div><Label>Description</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={300} /></div>
