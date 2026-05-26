@@ -24,7 +24,6 @@ import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCartsRouteImport } from './routes/admin.carts'
 import { Route as AdminCartManagersRouteImport } from './routes/admin.cart-managers'
-import { Route as AdminBrandingRouteImport } from './routes/admin.branding'
 
 const MyOrdersRoute = MyOrdersRouteImport.update({
   id: '/my-orders',
@@ -101,11 +100,6 @@ const AdminCartManagersRoute = AdminCartManagersRouteImport.update({
   path: '/cart-managers',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminBrandingRoute = AdminBrandingRouteImport.update({
-  id: '/branding',
-  path: '/branding',
-  getParentRoute: () => AdminRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -116,7 +110,6 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
-  '/admin/branding': typeof AdminBrandingRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -133,7 +126,6 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
-  '/admin/branding': typeof AdminBrandingRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -152,7 +144,6 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
-  '/admin/branding': typeof AdminBrandingRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -172,7 +163,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
-    | '/admin/branding'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -189,7 +179,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
-    | '/admin/branding'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -207,7 +196,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
-    | '/admin/branding'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -335,18 +323,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCartManagersRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/branding': {
-      id: '/admin/branding'
-      path: '/branding'
-      fullPath: '/admin/branding'
-      preLoaderRoute: typeof AdminBrandingRouteImport
-      parentRoute: typeof AdminRoute
-    }
   }
 }
 
 interface AdminRouteChildren {
-  AdminBrandingRoute: typeof AdminBrandingRoute
   AdminCartManagersRoute: typeof AdminCartManagersRoute
   AdminCartsRoute: typeof AdminCartsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -357,7 +337,6 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminBrandingRoute: AdminBrandingRoute,
   AdminCartManagersRoute: AdminCartManagersRoute,
   AdminCartsRoute: AdminCartsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
@@ -382,3 +361,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
