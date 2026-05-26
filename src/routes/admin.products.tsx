@@ -19,6 +19,21 @@ function AdminProducts() {
   const [editing, setEditing] = useState<P | null>(null);
   const blank = { name: "", description: "", price: "", cat: "Hot-Dog", image_url: "" };
   const [f, setF] = useState(blank);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Image uniquement"); return; }
+    if (file.size > 3 * 1024 * 1024) { toast.error("Max 3 Mo"); return; }
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("branding").upload(path, file, { cacheControl: "3600" });
+    setUploading(false);
+    if (error) { toast.error(error.message); return; }
+    const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
+    setF((prev) => ({ ...prev, image_url: pub.publicUrl }));
+    toast.success("Image téléversée");
+  };
 
   const load = () => supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setList((data as P[]) ?? []));
   useEffect(() => { load(); }, []);
