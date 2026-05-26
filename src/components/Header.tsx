@@ -28,7 +28,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl">🌭</span>
+          {logoUrl ? <img src={logoUrl} alt="Francky's" className="h-8 w-8 rounded-md object-contain" /> : <span className="text-2xl">🌭</span>}
           <span className="font-display text-xl font-bold tracking-tight">Francky's</span>
           {isAdminArea && <span className="ml-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">BO</span>}
         </Link>
