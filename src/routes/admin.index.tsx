@@ -102,6 +102,23 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-4">
+      <div className="card-pop rounded-2xl p-4">
+        <h3 className="mb-3 font-display text-lg font-bold">Logo de l'application</h3>
+        <div className="flex items-center gap-4">
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border bg-secondary">
+            {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : <span className="text-4xl">🌭</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="btn-hero inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold">
+              {uploadingLogo ? "Envoi…" : "Téléverser un logo"}
+              <input type="file" accept="image/*" className="hidden" onChange={onUploadLogo} disabled={uploadingLogo} />
+            </label>
+            {logoUrl && <Button variant="ghost" size="sm" onClick={resetLogo} className="text-destructive">Réinitialiser</Button>}
+            <p className="w-full text-xs text-muted-foreground">PNG ou JPG, max 2 Mo.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="card-pop grid gap-3 rounded-2xl p-4 sm:grid-cols-4">
         <div><Label>Du</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
         <div><Label>Au</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
