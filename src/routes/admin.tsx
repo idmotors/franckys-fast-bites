@@ -42,7 +42,6 @@ function AdminLayout() {
         <Item to="/admin/cart-managers" icon={UserCog} label="Gest. charriot" />
         {isAdmin && <Item to="/admin/users" icon={Users} label="Utilisateurs" />}
         <Item to="/admin/customers" icon={ContactRound} label="Clients" />
-        <Item to="/admin/branding" icon={ImageIcon} label="Logo" />
       </nav>
       <Outlet />
     </div>
