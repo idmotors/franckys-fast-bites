@@ -39,29 +39,6 @@ function Index() {
 
   const qtyOf = (id: string) => items.find((i) => i.id === id)?.quantity ?? 0;
 
-  if (!pos) {
-    return (
-      <div className="space-y-8 py-4">
-        <section className="relative overflow-hidden rounded-3xl shadow-[var(--shadow-pop)]">
-          <img src={heroImg} alt="Hot-dog Francky's" className="h-56 w-full object-cover sm:h-72" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-end p-6">
-            <h1 className="font-display text-3xl font-bold text-white sm:text-4xl">Le vrai goût du hot-dog 🌭</h1>
-          </div>
-        </section>
-        <div className="card-pop space-y-3 rounded-2xl p-6 text-center">
-          <MapPin className="mx-auto h-10 w-10 text-primary" />
-          <h2 className="font-display text-xl font-bold">Activez votre localisation</h2>
-          <p className="text-sm text-muted-foreground">L'app Francky's a besoin de votre position pour vous proposer le charriot le plus proche et calculer les frais de livraison.</p>
-          <Button onClick={request} className="btn-hero" size="lg" disabled={busy}>
-            {busy ? "Localisation…" : "Activer ma localisation"}
-          </Button>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-3xl shadow-[var(--shadow-pop)]">
