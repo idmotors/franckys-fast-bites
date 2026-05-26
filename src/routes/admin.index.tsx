@@ -20,6 +20,8 @@ const labels: Record<string, string> = {
 function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [carts, setCarts] = useState<{ id: string; name: string }[]>([]);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const [from, setFrom] = useState(monthAgo);
@@ -36,6 +38,38 @@ function AdminDashboard() {
 
   useEffect(() => { load(); }, [from, to]);
   useEffect(() => { supabase.from("carts").select("id,name").then(({ data }) => setCarts((data as any) ?? [])); }, []);
+  useEffect(() => {
+    supabase.from("app_settings").select("value").eq("key", "logo_url").maybeSingle()
+      .then(({ data }) => setLogoUrl((data?.value as string) ?? null));
+  }, []);
+
+  const onUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return toast.error("Image uniquement");
+    if (file.size > 2 * 1024 * 1024) return toast.error("Max 2 Mo");
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop();
+    const path = `logo/logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("branding").upload(path, file, { cacheControl: "3600", upsert: true });
+    if (error) { setUploadingLogo(false); return toast.error(error.message); }
+    const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
+    const { error: upErr } = await supabase.from("app_settings").upsert({ key: "logo_url", value: pub.publicUrl, updated_at: new Date().toISOString() });
+    setUploadingLogo(false);
+    if (upErr) return toast.error(upErr.message);
+    setLogoUrl(pub.publicUrl);
+    window.dispatchEvent(new Event("francky:logo-changed"));
+    toast.success("Logo mis à jour");
+  };
+
+  const resetLogo = async () => {
+    if (!confirm("Réinitialiser le logo ?")) return;
+    const { error } = await supabase.from("app_settings").upsert({ key: "logo_url", value: null, updated_at: new Date().toISOString() });
+    if (error) return toast.error(error.message);
+    setLogoUrl(null);
+    window.dispatchEvent(new Event("francky:logo-changed"));
+    toast.success("Logo réinitialisé");
+  };
 
   const filtered = useMemo(() => orders.filter((o) => {
     if (statusFilter !== "all" && o.status !== statusFilter) return false;
@@ -68,6 +102,23 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-4">
+      <div className="card-pop rounded-2xl p-4">
+        <h3 className="mb-3 font-display text-lg font-bold">Logo de l'application</h3>
+        <div className="flex items-center gap-4">
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border bg-secondary">
+            {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : <span className="text-4xl">🌭</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="btn-hero inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold">
+              {uploadingLogo ? "Envoi…" : "Téléverser un logo"}
+              <input type="file" accept="image/*" className="hidden" onChange={onUploadLogo} disabled={uploadingLogo} />
+            </label>
+            {logoUrl && <Button variant="ghost" size="sm" onClick={resetLogo} className="text-destructive">Réinitialiser</Button>}
+            <p className="w-full text-xs text-muted-foreground">PNG ou JPG, max 2 Mo.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="card-pop grid gap-3 rounded-2xl p-4 sm:grid-cols-4">
         <div><Label>Du</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
         <div><Label>Au</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>

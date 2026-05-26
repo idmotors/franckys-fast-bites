@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { LayoutDashboard, Package, Truck, Users, UserCog, Boxes, ContactRound, Image as ImageIcon } from "lucide-react";
+import { LayoutDashboard, Package, Truck, Users, UserCog, Boxes, ContactRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
@@ -42,7 +42,6 @@ function AdminLayout() {
         <Item to="/admin/cart-managers" icon={UserCog} label="Gest. charriot" />
         {isAdmin && <Item to="/admin/users" icon={Users} label="Utilisateurs" />}
         <Item to="/admin/customers" icon={ContactRound} label="Clients" />
-        <Item to="/admin/branding" icon={ImageIcon} label="Logo" />
       </nav>
       <Outlet />
     </div>
