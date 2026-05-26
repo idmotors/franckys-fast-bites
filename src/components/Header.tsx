@@ -1,14 +1,28 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ShoppingBag, User as UserIcon, MapPin, LayoutDashboard, LogOut, ClipboardList, Truck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 export function Header() {
   const { user, isBO, isCartManager, signOut } = useAuth();
   const { count } = useCart();
   const loc = useLocation();
   const isAdminArea = loc.pathname.startsWith("/admin");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = () => {
+      supabase.from("app_settings").select("value").eq("key", "logo_url").maybeSingle()
+        .then(({ data }) => setLogoUrl((data?.value as string) ?? null));
+    };
+    load();
+    const h = () => load();
+    window.addEventListener("francky:logo-changed", h);
+    return () => window.removeEventListener("francky:logo-changed", h);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md">
