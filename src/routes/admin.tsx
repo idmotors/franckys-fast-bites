@@ -18,8 +18,12 @@ function AdminLayout() {
   if (loading || !isBO) return <p className="py-12 text-center text-muted-foreground">Vérification…</p>;
 
   const Item = ({ to, icon: Icon, label, exact }: any) => (
-    <Link to={to} activeProps={{ className: "bg-primary text-primary-foreground" }} activeOptions={exact ? { exact: true } : undefined}
-      className="card-pop flex flex-col items-center justify-center gap-1 rounded-xl p-3 text-xs font-semibold">
+    <Link
+      to={to}
+      activeProps={{ className: "!bg-primary !text-primary-foreground !bg-none shadow-[var(--shadow-pop)] ring-2 ring-primary" }}
+      activeOptions={exact ? { exact: true } : undefined}
+      className="card-pop flex flex-col items-center justify-center gap-1 rounded-xl p-3 text-xs font-semibold text-foreground transition-colors"
+    >
       <Icon className="h-5 w-5" /> {label}
     </Link>
   );
