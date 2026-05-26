@@ -54,6 +54,19 @@ function Index() {
         </div>
       </section>
 
+      {!pos && (
+        <div className="card-pop flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <p className="text-sm">Activez votre localisation pour commander, être livré ou trouver le charriot le plus proche.</p>
+          </div>
+          <Button onClick={request} disabled={busy} size="sm" className="btn-hero shrink-0">
+            {busy ? "Localisation…" : "Activer ma localisation"}
+          </Button>
+        </div>
+      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
       {loading ? (
         <p className="text-center text-muted-foreground">Chargement…</p>
       ) : (
