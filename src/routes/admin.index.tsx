@@ -20,6 +20,8 @@ const labels: Record<string, string> = {
 function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [carts, setCarts] = useState<{ id: string; name: string }[]>([]);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const [from, setFrom] = useState(monthAgo);
