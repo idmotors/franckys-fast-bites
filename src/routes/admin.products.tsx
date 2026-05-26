@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { formatAr } from "@/lib/format";
 import { toast } from "sonner";
-import { Trash2, Plus, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Pencil, X, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/admin/products")({ component: AdminProducts });
 
