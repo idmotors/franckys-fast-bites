@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { formatAr } from "@/lib/format";
 import { toast } from "sonner";
-import { Trash2, Plus, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Pencil, X, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/admin/products")({ component: AdminProducts });
 
@@ -19,6 +19,21 @@ function AdminProducts() {
   const [editing, setEditing] = useState<P | null>(null);
   const blank = { name: "", description: "", price: "", cat: "Hot-Dog", image_url: "" };
   const [f, setF] = useState(blank);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Image uniquement"); return; }
+    if (file.size > 3 * 1024 * 1024) { toast.error("Max 3 Mo"); return; }
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("branding").upload(path, file, { cacheControl: "3600" });
+    setUploading(false);
+    if (error) { toast.error(error.message); return; }
+    const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
+    setF((prev) => ({ ...prev, image_url: pub.publicUrl }));
+    toast.success("Image téléversée");
+  };
 
   const load = () => supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setList((data as P[]) ?? []));
   useEffect(() => { load(); }, []);
@@ -56,7 +71,24 @@ function AdminProducts() {
           <div><Label>Nom *</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={100} required /></div>
           <div><Label>Catégorie</Label><Input value={f.cat} onChange={(e) => setF({ ...f, cat: e.target.value })} maxLength={50} /></div>
           <div><Label>Prix (Ar) *</Label><Input type="number" min="0" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} required /></div>
-          <div><Label>Photo (URL)</Label><Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="https://..." /></div>
+          <div>
+            <Label>Photo du produit</Label>
+            <div className="flex items-center gap-3">
+              {f.image_url ? (
+                <img src={f.image_url} alt="" className="h-14 w-14 rounded-lg object-cover" />
+              ) : (
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-secondary text-2xl">🌭</div>
+              )}
+              <label className="btn-hero inline-flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold">
+                <Upload className="h-4 w-4" />
+                {uploading ? "Envoi…" : "Téléverser"}
+                <input type="file" accept="image/*" className="hidden" disabled={uploading}
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(file); e.target.value = ""; }} />
+              </label>
+              {f.image_url && <Button type="button" variant="ghost" size="sm" onClick={() => setF({ ...f, image_url: "" })}>Retirer</Button>}
+            </div>
+            <Input className="mt-2" value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="ou collez une URL https://..." />
+          </div>
         </div>
         <div><Label>Description</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={300} /></div>
         <Button type="submit" className="btn-hero gap-2"><Plus className="h-4 w-4" />{editing ? "Enregistrer" : "Ajouter"}</Button>
