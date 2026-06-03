@@ -173,33 +173,43 @@ function AdminDashboard() {
       </div>
 
       <h2 className="font-display text-xl font-bold pt-2">Commandes ({filtered.length})</h2>
-      {filtered.map((o) => (
-        <article key={o.id} className="card-pop space-y-2 rounded-2xl p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString("fr-FR")}</p>
-              <p className="font-semibold">
-                {o.mode === "pickup" ? `🛒 Retrait — ${o.carts?.name ?? "—"}` : `🛵 Livraison — ${o.assigned?.name ?? "—"}`}
-              </p>
-              <p className="text-sm">📞 <a href={`tel:${o.phone}`} className="text-primary underline">{o.phone}</a></p>
-              {o.mode === "delivery" && <p className="text-xs text-muted-foreground">📍 {o.delivery_address}</p>}
-            </div>
-            <Badge>{labels[o.status] ?? o.status}</Badge>
-          </div>
-          <ul className="text-sm">
-            {o.order_items?.map((it: any, i: number) => <li key={i}>{it.quantity}× {it.product_name}</li>)}
-          </ul>
-          <div className="flex items-center justify-between pt-2">
-            <span className="font-display text-lg font-bold text-primary">{formatAr(o.total_ar)}</span>
-            <Select value={o.status} onValueChange={(v) => updateStatus(o.id, v)}>
-              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => <SelectItem key={s} value={s}>{labels[s]}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </article>
-      ))}
+      <div className="card-pop overflow-x-auto rounded-2xl">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary text-left text-xs uppercase">
+            <tr>
+              <th className="px-3 py-2">Date</th>
+              <th className="px-3 py-2">Mode / Charriot</th>
+              <th className="px-3 py-2">Téléphone</th>
+              <th className="px-3 py-2">Articles</th>
+              <th className="px-3 py-2 text-right">Total</th>
+              <th className="px-3 py-2">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((o) => (
+              <tr key={o.id} className="border-t align-top">
+                <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">{new Date(o.created_at).toLocaleString("fr-FR")}</td>
+                <td className="px-3 py-2">
+                  <p className="font-medium">{o.mode === "pickup" ? `🛒 ${o.carts?.name ?? "—"}` : `🛵 ${o.assigned?.name ?? "—"}`}</p>
+                  {o.mode === "delivery" && <p className="text-[10px] text-muted-foreground">{o.delivery_address}</p>}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap"><a href={`tel:${o.phone}`} className="text-primary underline">{o.phone}</a></td>
+                <td className="px-3 py-2 text-xs">{o.order_items?.map((it: any) => `${it.quantity}× ${it.product_name}`).join(", ")}</td>
+                <td className="px-3 py-2 text-right font-semibold text-primary whitespace-nowrap">{formatAr(o.total_ar)}</td>
+                <td className="px-3 py-2">
+                  <Select value={o.status} onValueChange={(v) => updateStatus(o.id, v)}>
+                    <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => <SelectItem key={s} value={s}>{labels[s]}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Aucune commande.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
