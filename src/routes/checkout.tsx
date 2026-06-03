@@ -13,7 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatAr } from "@/lib/format";
 import { distanceKm, deliveryFee, geocodeSearch, type NominatimResult } from "@/lib/geo";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { MapPreview } from "@/components/MapPreview";
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
@@ -77,14 +78,14 @@ function Checkout() {
   const fee = mode === "delivery" ? (assignment?.fee ?? 0) : 0;
   const grandTotal = total + fee;
 
-  const doSearch = async () => {
-    if (!addrQuery.trim()) return;
-    setSearching(true);
-    const r = await geocodeSearch(addrQuery, 5);
-    setAddrResults(r);
-    setSearching(false);
-    if (r.length === 0) toast.error("Aucune adresse trouvée");
-  };
+  useEffect(() => {
+    if (!addrQuery.trim() || (delivery && addrQuery === delivery.display)) { setAddrResults([]); return; }
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try { setAddrResults(await geocodeSearch(addrQuery, 6)); } finally { setSearching(false); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [addrQuery, delivery]);
 
   if (items.length === 0) {
     return (
@@ -175,20 +176,30 @@ function Checkout() {
       {mode === "delivery" && (
         <div className="card-pop space-y-3 rounded-2xl p-4">
           <Label className="text-base font-semibold">Adresse de livraison</Label>
-          <div className="flex gap-2">
-            <Input value={addrQuery} onChange={(e) => setAddrQuery(e.target.value)} placeholder="Quartier, rue, ville..." />
-            <Button type="button" variant="outline" onClick={doSearch} disabled={searching}>
-              <Search className="h-4 w-4" />
-            </Button>
+          <div className="relative">
+            <Input
+              value={addrQuery}
+              onChange={(e) => { setAddrQuery(e.target.value); if (delivery) setDelivery(null); }}
+              placeholder="Tapez votre adresse (quartier, rue, ville)..."
+            />
+            <MapPin className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            {searching && <p className="mt-1 text-xs text-muted-foreground">Recherche…</p>}
+            {addrResults.length > 0 && (
+              <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-background shadow-lg">
+                {addrResults.map((r, i) => (
+                  <button type="button" key={i}
+                    onClick={() => { setDelivery({ display: r.display_name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) }); setAddrResults([]); setAddrQuery(r.display_name); }}
+                    className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-secondary last:border-b-0">
+                    📍 {r.display_name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {addrResults.length > 0 && (
-            <div className="space-y-1">
-              {addrResults.map((r, i) => (
-                <button type="button" key={i} onClick={() => { setDelivery({ display: r.display_name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) }); setAddrResults([]); setAddrQuery(r.display_name); }}
-                  className="block w-full rounded-lg border p-2 text-left text-xs hover:bg-secondary">
-                  📍 {r.display_name}
-                </button>
-              ))}
+          {delivery && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">{delivery.display}</p>
+              <MapPreview lat={delivery.lat} lng={delivery.lng} height={200} />
             </div>
           )}
           {delivery && assignment && (
