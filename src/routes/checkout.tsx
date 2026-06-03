@@ -13,7 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatAr } from "@/lib/format";
 import { distanceKm, deliveryFee, geocodeSearch, type NominatimResult } from "@/lib/geo";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { MapPreview } from "@/components/MapPreview";
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
