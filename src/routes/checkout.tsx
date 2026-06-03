@@ -78,14 +78,14 @@ function Checkout() {
   const fee = mode === "delivery" ? (assignment?.fee ?? 0) : 0;
   const grandTotal = total + fee;
 
-  const doSearch = async () => {
-    if (!addrQuery.trim()) return;
-    setSearching(true);
-    const r = await geocodeSearch(addrQuery, 5);
-    setAddrResults(r);
-    setSearching(false);
-    if (r.length === 0) toast.error("Aucune adresse trouvée");
-  };
+  useEffect(() => {
+    if (!addrQuery.trim() || (delivery && addrQuery === delivery.display)) { setAddrResults([]); return; }
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try { setAddrResults(await geocodeSearch(addrQuery, 6)); } finally { setSearching(false); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [addrQuery, delivery]);
 
   if (items.length === 0) {
     return (
