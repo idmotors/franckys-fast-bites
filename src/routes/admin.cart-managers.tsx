@@ -10,12 +10,17 @@ import { Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/cart-managers")({ component: AdminCM });
 
+function genInternalEmail(name: string) {
+  const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 20) || "mgr";
+  return `${slug}-${Math.random().toString(36).slice(2, 8)}@cart.franckys.local`;
+}
+
 function AdminCM() {
   const [list, setList] = useState<any[]>([]);
   const [carts, setCarts] = useState<any[]>([]);
-  const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [cartId, setCartId] = useState("none");
 
   const load = async () => {
@@ -31,14 +36,14 @@ function AdminCM() {
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.includes("@") || pwd.length < 6 || !name.trim()) return toast.error("Champs invalides");
-    // Sign up via standard auth (auto-confirm enabled)
-    const { data, error } = await supabase.auth.signUp({ email, password: pwd, options: { data: { full_name: name } } });
+    if (!name.trim() || pwd.length < 6) return toast.error("Nom et mot de passe (≥6 car.) requis");
+    const email = genInternalEmail(name);
+    const { data, error } = await supabase.auth.signUp({ email, password: pwd, options: { data: { full_name: name, phone } } });
     if (error || !data.user) return toast.error(error?.message ?? "Erreur");
     await supabase.from("user_roles").insert({ user_id: data.user.id, role: "cart_manager" });
     if (cartId !== "none") await supabase.from("carts").update({ manager_user_id: data.user.id }).eq("id", cartId);
-    toast.success("Gestionnaire créé");
-    setEmail(""); setPwd(""); setName(""); setCartId("none"); load();
+    toast.success(`Gestionnaire créé. Identifiant : ${email}`);
+    setPwd(""); setName(""); setPhone(""); setCartId("none"); load();
   };
 
   const remove = async (uid: string) => {
@@ -58,10 +63,11 @@ function AdminCM() {
     <div className="space-y-4">
       <form onSubmit={create} className="card-pop space-y-3 rounded-2xl p-4">
         <h2 className="font-display text-xl font-bold">Nouveau gestionnaire charriot</h2>
+        <p className="text-xs text-muted-foreground">Un identifiant interne sera généré automatiquement.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div><Label>Nom *</Label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
-          <div><Label>Email *</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-          <div><Label>Mot de passe *</Label><Input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required /></div>
+          <div><Label>Téléphone</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+261 …" /></div>
+          <div><Label>Mot de passe *</Label><Input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required minLength={6} /></div>
           <div>
             <Label>Charriot affecté</Label>
             <Select value={cartId} onValueChange={setCartId}>

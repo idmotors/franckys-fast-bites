@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Plus, Search, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Pencil, X, MapPin } from "lucide-react";
 import { geocodeSearch, type NominatimResult } from "@/lib/geo";
+import { MapPreview } from "@/components/MapPreview";
 
 export const Route = createFileRoute("/admin/carts")({ component: AdminCarts });
 
@@ -18,7 +19,7 @@ function AdminCarts() {
   const [list, setList] = useState<C[]>([]);
   const [managers, setManagers] = useState<{ user_id: string; full_name: string | null }[]>([]);
   const [editing, setEditing] = useState<C | null>(null);
-  const blank = { name: "", address: "", lat: "", lng: "", manager: "none" };
+  const blank = { name: "", address: "", lat: null as number | null, lng: null as number | null, manager: "none" };
   const [f, setF] = useState(blank);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<NominatimResult[]>([]);
@@ -36,19 +37,34 @@ function AdminCarts() {
 
   useEffect(() => { load(); loadManagers(); }, []);
 
-  const startEdit = (c: C) => { setEditing(c); setF({ name: c.name, address: c.address, lat: String(c.latitude), lng: String(c.longitude), manager: c.manager_user_id ?? "none" }); };
+  const startEdit = (c: C) => {
+    setEditing(c);
+    setF({ name: c.name, address: c.address, lat: c.latitude, lng: c.longitude, manager: c.manager_user_id ?? "none" });
+    setQ(c.address);
+  };
   const cancel = () => { setEditing(null); setF(blank); setResults([]); setQ(""); };
 
-  const search = async () => {
-    if (!q.trim()) return;
-    setSearching(true); setResults(await geocodeSearch(q)); setSearching(false);
+  // Autocomplete: debounce search-as-you-type
+  useEffect(() => {
+    if (!q.trim() || q === f.address) { setResults([]); return; }
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try { setResults(await geocodeSearch(q, 6)); } finally { setSearching(false); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [q, f.address]);
+
+  const pick = (r: NominatimResult) => {
+    setF({ ...f, address: r.display_name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
+    setQ(r.display_name);
+    setResults([]);
   };
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    const la = parseFloat(f.lat), lo = parseFloat(f.lng);
-    if (!f.name.trim() || !f.address.trim() || isNaN(la) || isNaN(lo)) return toast.error("Champs invalides");
-    const payload = { name: f.name.trim(), address: f.address.trim(), latitude: la, longitude: lo, manager_user_id: f.manager === "none" ? null : f.manager };
+    if (!f.name.trim()) return toast.error("Nom requis");
+    if (f.lat == null || f.lng == null || !f.address) return toast.error("Choisissez une localisation");
+    const payload = { name: f.name.trim(), address: f.address, latitude: f.lat, longitude: f.lng, manager_user_id: f.manager === "none" ? null : f.manager };
     const { error } = editing
       ? await supabase.from("carts").update(payload).eq("id", editing.id)
       : await supabase.from("carts").insert({ ...payload, active: true });
@@ -71,23 +87,30 @@ function AdminCarts() {
         </div>
         <div><Label>Nom *</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required /></div>
 
-        <div className="space-y-2">
-          <Label>Recherche d'adresse (OpenStreetMap)</Label>
-          <div className="flex gap-2">
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Quartier, ville..." />
-            <Button type="button" variant="outline" onClick={search} disabled={searching}><Search className="h-4 w-4" /></Button>
+        <div className="space-y-2 relative">
+          <Label>Localisation *</Label>
+          <div className="relative">
+            <Input value={q} onChange={(e) => { setQ(e.target.value); if (f.address) setF({ ...f, address: "", lat: null, lng: null }); }} placeholder="Tapez un quartier, une rue, une ville..." />
+            <MapPin className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </div>
-          {results.map((r, i) => (
-            <button type="button" key={i} onClick={() => { setF({ ...f, address: r.display_name, lat: r.lat, lng: r.lon }); setResults([]); }}
-              className="block w-full rounded-lg border p-2 text-left text-xs hover:bg-secondary">📍 {r.display_name}</button>
-          ))}
+          {searching && <p className="text-xs text-muted-foreground">Recherche…</p>}
+          {results.length > 0 && (
+            <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-background shadow-lg">
+              {results.map((r, i) => (
+                <button type="button" key={i} onClick={() => pick(r)} className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-secondary last:border-b-0">
+                  📍 {r.display_name}
+                </button>
+              ))}
+            </div>
+          )}
+          {f.lat != null && f.lng != null && (
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{f.address}</p>
+              <MapPreview lat={f.lat} lng={f.lng} height={180} />
+            </div>
+          )}
         </div>
 
-        <div><Label>Adresse *</Label><Input value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} required /></div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div><Label>Latitude *</Label><Input value={f.lat} onChange={(e) => setF({ ...f, lat: e.target.value })} required /></div>
-          <div><Label>Longitude *</Label><Input value={f.lng} onChange={(e) => setF({ ...f, lng: e.target.value })} required /></div>
-        </div>
         <div>
           <Label>Gestionnaire charriot</Label>
           <Select value={f.manager} onValueChange={(v) => setF({ ...f, manager: v })}>
