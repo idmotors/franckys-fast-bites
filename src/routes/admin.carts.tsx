@@ -8,8 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, Plus, Pencil, X, MapPin } from "lucide-react";
-import { geocodeSearch, type NominatimResult } from "@/lib/geo";
-import { MapPreview } from "@/components/MapPreview";
+import { geocodeSearch, reverseGeocode, type NominatimResult } from "@/lib/geo";
+import { MapPicker } from "@/components/MapPicker";
 
 export const Route = createFileRoute("/admin/carts")({ component: AdminCarts });
 
