@@ -26,6 +26,16 @@ export async function geocodeSearch(q: string, limit = 5): Promise<NominatimResu
   return (await res.json()) as NominatimResult[];
 }
 
+export async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+  try {
+    const res = await fetch(url, { headers: { "Accept-Language": "fr" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.display_name ?? null;
+  } catch { return null; }
+}
+
 export function deliveryFee(km: number): number {
   return km <= 15 ? 5000 : 10000;
 }
