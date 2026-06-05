@@ -199,7 +199,16 @@ function Checkout() {
           {delivery && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">{delivery.display}</p>
-              <MapPreview lat={delivery.lat} lng={delivery.lng} height={200} />
+              <MapPicker
+                lat={delivery.lat}
+                lng={delivery.lng}
+                height={240}
+                onChange={async (lat, lng) => {
+                  setDelivery({ display: delivery.display, lat, lng });
+                  const addr = await reverseGeocode(lat, lng);
+                  if (addr) { setDelivery({ display: addr, lat, lng }); setAddrQuery(addr); }
+                }}
+              />
             </div>
           )}
           {delivery && assignment && (
