@@ -8,8 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, Plus, Pencil, X, MapPin } from "lucide-react";
-import { geocodeSearch, type NominatimResult } from "@/lib/geo";
-import { MapPreview } from "@/components/MapPreview";
+import { geocodeSearch, reverseGeocode, type NominatimResult } from "@/lib/geo";
+import { MapPicker } from "@/components/MapPicker";
 
 export const Route = createFileRoute("/admin/carts")({ component: AdminCarts });
 
@@ -106,7 +106,16 @@ function AdminCarts() {
           {f.lat != null && f.lng != null && (
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">{f.address}</p>
-              <MapPreview lat={f.lat} lng={f.lng} height={180} />
+              <MapPicker
+                lat={f.lat}
+                lng={f.lng}
+                height={220}
+                onChange={async (lat, lng) => {
+                  setF((prev) => ({ ...prev, lat, lng }));
+                  const addr = await reverseGeocode(lat, lng);
+                  if (addr) { setF((prev) => ({ ...prev, address: addr, lat, lng })); setQ(addr); }
+                }}
+              />
             </div>
           )}
         </div>

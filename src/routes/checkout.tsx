@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatAr } from "@/lib/format";
-import { distanceKm, deliveryFee, geocodeSearch, type NominatimResult } from "@/lib/geo";
+import { distanceKm, deliveryFee, geocodeSearch, reverseGeocode, type NominatimResult } from "@/lib/geo";
 import { toast } from "sonner";
 import { MapPin } from "lucide-react";
-import { MapPreview } from "@/components/MapPreview";
+import { MapPicker } from "@/components/MapPicker";
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
@@ -199,7 +199,16 @@ function Checkout() {
           {delivery && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">{delivery.display}</p>
-              <MapPreview lat={delivery.lat} lng={delivery.lng} height={200} />
+              <MapPicker
+                lat={delivery.lat}
+                lng={delivery.lng}
+                height={240}
+                onChange={async (lat, lng) => {
+                  setDelivery({ display: delivery.display, lat, lng });
+                  const addr = await reverseGeocode(lat, lng);
+                  if (addr) { setDelivery({ display: addr, lat, lng }); setAddrQuery(addr); }
+                }}
+              />
             </div>
           )}
           {delivery && assignment && (
