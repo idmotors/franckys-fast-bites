@@ -1,6 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { useGeo } from "@/hooks/useGeo";
 import { Button } from "@/components/ui/button";
@@ -8,28 +6,25 @@ import { formatAr } from "@/lib/format";
 import { Plus, MapPin, Minus } from "lucide-react";
 import heroImg from "@/assets/hero-hotdog.jpg";
 import { toast } from "sonner";
+import { getProducts, type Product } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/")({
+  loader: () => getProducts(),
   component: Index,
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-4 text-center text-destructive">
+      {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-4 text-center text-muted-foreground">Aucun produit disponible.</div>
+  ),
 });
 
-interface Product {
-  id: string; name: string; description: string | null; price_ar: number;
-  category: string | null; image_url: string | null; available: boolean;
-}
-
 function Index() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const products = Route.useLoaderData() as Product[];
   const { items, add, setQty } = useCart();
   const { pos, request, busy, error } = useGeo();
-
-  useEffect(() => {
-    supabase.from("products").select("*").eq("available", true).order("category").then(({ data }) => {
-      setProducts((data as Product[]) ?? []);
-      setLoading(false);
-    });
-  }, []);
 
   const grouped = products.reduce<Record<string, Product[]>>((acc, p) => {
     const k = p.category ?? "Autres";
@@ -66,8 +61,8 @@ function Index() {
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      {loading ? (
-        <p className="text-center text-muted-foreground">Chargement…</p>
+      {products.length === 0 ? (
+        <p className="text-center text-muted-foreground">Aucun produit disponible pour le moment.</p>
       ) : (
         Object.entries(grouped).map(([cat, items]) => (
           <section key={cat} className="space-y-3">
