@@ -21,23 +21,10 @@ export const Route = createFileRoute("/")({
   ),
 });
 
-interface Product {
-  id: string; name: string; description: string | null; price_ar: number;
-  category: string | null; image_url: string | null; available: boolean;
-}
-
 function Index() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const products = Route.useLoaderData();
   const { items, add, setQty } = useCart();
   const { pos, request, busy, error } = useGeo();
-
-  useEffect(() => {
-    supabase.from("products").select("*").eq("available", true).order("category").then(({ data }) => {
-      setProducts((data as Product[]) ?? []);
-      setLoading(false);
-    });
-  }, []);
 
   const grouped = products.reduce<Record<string, Product[]>>((acc, p) => {
     const k = p.category ?? "Autres";
@@ -74,8 +61,8 @@ function Index() {
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      {loading ? (
-        <p className="text-center text-muted-foreground">Chargement…</p>
+      {products.length === 0 ? (
+        <p className="text-center text-muted-foreground">Aucun produit disponible pour le moment.</p>
       ) : (
         Object.entries(grouped).map(([cat, items]) => (
           <section key={cat} className="space-y-3">
