@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const products = Route.useLoaderData();
+  const products = Route.useLoaderData() as Product[];
   const { items, add, setQty } = useCart();
   const { pos, request, busy, error } = useGeo();
 
