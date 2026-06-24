@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, Trash2, KeyRound } from "lucide-react";
+import { adminSendPasswordReset } from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/admin/users")({ component: AdminUsers });
 
@@ -55,6 +56,17 @@ function AdminUsers() {
     if (!confirm("Retirer tous les rôles de cet utilisateur ?")) return;
     await supabase.from("user_roles").delete().eq("user_id", uid);
     load();
+  };
+
+  const sendReset = async (uid: string) => {
+    try {
+      const res = await adminSendPasswordReset({
+        data: { userId: uid, redirectTo: `${window.location.origin}/reset-password` },
+      });
+      toast.success(`Email de réinitialisation envoyé à ${res.email}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur");
+    }
   };
 
   return (
