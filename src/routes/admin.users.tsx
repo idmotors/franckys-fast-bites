@@ -99,6 +99,7 @@ function AdminUsers() {
               <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
               <SelectContent>{ROLES.map((r) => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}</SelectContent>
             </Select>
+            <Button variant="ghost" size="icon" title="Réinitialiser le mot de passe" onClick={() => sendReset(u.user_id)}><KeyRound className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" onClick={() => remove(u.user_id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
         ))}
