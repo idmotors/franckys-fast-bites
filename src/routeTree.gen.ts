@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as MyOrdersRouteImport } from './routes/my-orders'
 import { Route as LocateRouteImport } from './routes/locate'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -25,6 +26,11 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCartsRouteImport } from './routes/admin.carts'
 import { Route as AdminCartManagersRouteImport } from './routes/admin.cart-managers'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyOrdersRoute = MyOrdersRouteImport.update({
   id: '/my-orders',
   path: '/my-orders',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/locate': typeof LocateRoute
   '/my-orders': typeof MyOrdersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/cart-managers': typeof AdminCartManagersRoute
   '/admin/carts': typeof AdminCartsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
+    | '/reset-password'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
+    | '/reset-password'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/locate'
     | '/my-orders'
+    | '/reset-password'
     | '/admin/cart-managers'
     | '/admin/carts'
     | '/admin/customers'
@@ -214,10 +226,18 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   LocateRoute: typeof LocateRoute
   MyOrdersRoute: typeof MyOrdersRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-orders': {
       id: '/my-orders'
       path: '/my-orders'
@@ -357,16 +377,8 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   LocateRoute: LocateRoute,
   MyOrdersRoute: MyOrdersRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
