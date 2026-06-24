@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin/users")({ component: AdminUsers });
 
@@ -29,7 +29,7 @@ function AdminUsers() {
     const { data: roles } = await supabase.from("user_roles").select("user_id,role").in("role", ["admin", "bo_manager", "cart_manager"]);
     const ids = Array.from(new Set((roles ?? []).map((r: any) => r.user_id)));
     if (ids.length === 0) { setList([]); return; }
-    const { data: profs } = await supabase.from("profiles").select("user_id,full_name,phone").in("user_id", ids);
+    const { data: profs } = await supabase.from("profiles").select("user_id,full_name,phone,email").in("user_id", ids);
     setList((profs ?? []).map((p: any) => ({ ...p, roles: (roles ?? []).filter((r: any) => r.user_id === p.user_id).map((r: any) => r.role) })));
   };
   useEffect(() => { load(); }, []);
