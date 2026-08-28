@@ -41,7 +41,7 @@ function Index() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-end p-6">
           <h1 className="font-display text-3xl font-bold text-white sm:text-4xl">Le vrai goût du hot-dog 🌭</h1>
-          <p className="mt-1 text-sm text-white/90">Frais, juteux, livré ou à retirer au charriot.</p>
+          <p className="mt-1 text-sm text-white/90">Livré ou à retirer au charriot.</p>
           <div className="mt-4">
             <Link to="/locate"><Button variant="secondary" size="sm" className="gap-2"><MapPin className="h-4 w-4" />Charriot le plus proche</Button></Link>
           </div>

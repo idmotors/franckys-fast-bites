@@ -178,7 +178,7 @@ function AdminDashboard() {
           <thead className="bg-secondary text-left text-xs uppercase">
             <tr>
               <th className="px-3 py-2">Date</th>
-              <th className="px-3 py-2">Mode / Charriot</th>
+              <th className="px-3 py-2">Mode/Charriot</th>
               <th className="px-3 py-2">Téléphone</th>
               <th className="px-3 py-2">Articles</th>
               <th className="px-3 py-2 text-right">Total</th>
